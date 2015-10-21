@@ -41,7 +41,6 @@ class sample_file:
             if index >= num_buckets:
                 break;
             buckets[index] += absolute[i]
-#         pyplot.plot([i * width for i in range(num_buckets)], buckets, label = self.filename)
         return buckets
     
     def get_samples(self):
@@ -93,7 +92,7 @@ if __name__ == '__main__':
     print "predicted = ", predicted
     print "truedata  = ", truedata
     print "macro precision = ", precision
-    print "recall precision = ", recall
+    print "macro recall = ", recall
     
     # Write precision/recall to a file so that we can se how 
     # the precision of the project's output improves over time.
