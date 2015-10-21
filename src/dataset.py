@@ -89,10 +89,11 @@ if __name__ == '__main__':
     training = dataset('../datasets/training', filters)
     
     svr = svm.SVC()
-    parameters = {'kernel':['linear', 'rbf']}
-    clf = grid_search.GridSearchCV(svr, parameters)
-    print clf 
+    exponential_range = [pow(10, i) for i in range(-2, 2)]
+    parameters = {'kernel':['linear', 'rbf'], 'C':exponential_range, 'gamma':exponential_range}
+    clf = grid_search.GridSearchCV(svr, parameters, n_jobs=8, verbose=True)
     clf.fit(training.data, training.target)
+    print clf 
 
     validation = dataset('../datasets/validation')
     
