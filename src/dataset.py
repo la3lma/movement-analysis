@@ -90,12 +90,13 @@ if __name__ == '__main__':
     precision=precision_score(truedata, predicted, average='macro')  
     recall=recall_score(truedata, predicted, average='macro')  
 
-    # XXX Precision/recall should be written into a logfile with a timestamp.
     print "predicted = ", predicted
     print "truedata  = ", truedata
     print "macro precision = ", precision
     print "recall precision = ", recall
     
+    # Write precision/recall to a file so that we can se how 
+    # the precision of the project's output improves over time.
     ts = time.time()
     record = str(ts) + ", " +  str(precision) + ", " +  str(recall) + "\n";
     with open("../logs/precision-recall-time-evolution.csv", "a") as myfile:
@@ -103,10 +104,10 @@ if __name__ == '__main__':
 
     # Compute confusion matrix
     cm = confusion_matrix(truedata, predicted)
-
+    print "confusion:"
     print(cm)
     
-   # Show confusion matrix in a separate window
+    # Show confusion matrix in a separate window
     plt.matshow(cm)
     plt.title('Confusion matrix')
     plt.colorbar()
@@ -114,10 +115,5 @@ if __name__ == '__main__':
     plt.xlabel('Predicted label')
     plt.show()
 
-
-
-#     pyplot.legend()
-#     pyplot.show()
-    
     
     
