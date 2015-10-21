@@ -1,9 +1,12 @@
 from numpy import fft
-from matplotlib import pyplot
+from matplotlib import pyplot as plt
 from pickle import BINSTRING
 import math
 import os
 from sklearn import svm
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import confusion_matrix
 
 class sample_file:
     def __init__(self, filename):
@@ -64,6 +67,8 @@ def get_samples(foldername, filter=None):
             samples.append(sample)
         
     return samples
+
+
           
 if __name__ == '__main__':
     filters = {'dancing': 0, 'walking': 1, 'sitting':2}
@@ -73,8 +78,33 @@ if __name__ == '__main__':
     clf.fit(training.data, training.target)
 
     validation = dataset('../datasets/validation')
-    for i in range(len(validation.data)):
-        print 'expected', filters[validation.activities[i]], 'got', clf.predict(validation.data[i])
+    
+    predicted = clf.predict(validation.data)
+    truedata =  map(lambda x: filters[x], validation.activities)
+    # http://scikit-learn.org/stable/auto_examples/calibration/plot_calibration_curve.html
+    precision=precision_score(truedata, predicted, average='macro')  
+    recall=precision_score(truedata, predicted, average='macro')  
+    print "predicted = ", predicted
+    print "truedata  = ", truedata
+    print "macro precision = ", precision
+    print "recall precision = ", precision
+
+
+    # Compute confusion matrix
+    cm = confusion_matrix(truedata, predicted)
+
+    print(cm)
+    
+   # Show confusion matrix in a separate window
+    plt.matshow(cm)
+    plt.title('Confusion matrix')
+    plt.colorbar()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.show()
+
+
+
 #     pyplot.legend()
 #     pyplot.show()
     
