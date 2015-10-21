@@ -29,8 +29,8 @@ class sample_file:
     
     def get_buckets(self, first, last, num_buckets, hertz_cutoff=float(5)):
         slice=self.data[first:last]
-        print "len slice = " + str(len(slice))
         one_dimentional = [column[2] for column in slice]
+
         transformed = fft.fft(one_dimentional)
         absolute = [abs(complex) for complex in transformed]
         
@@ -46,20 +46,31 @@ class sample_file:
         return buckets
     
     def get_samples(self):
-        buckets = self.get_buckets(0, len(self.data), 40)
-        return [buckets]
+        result = []
+        segmentsize=100
+        # Reduce this to very little to get very large trainingsets
+        stride=100
+        noOfBuckets=40
+        for  start in range(0, len(self.data) - segmentsize, stride):
+            segments_buckets = self.get_buckets(start, start + segmentsize, noOfBuckets)
+            result.append(segments_buckets)
+        return result
         
 class dataset:
     def __init__(self, foldername, filters = {'dancing': 0, 'walking': 1, 'sitting':2}):
         self.data = []
         self.target = []
         self.activities = []
+        noOfSamples = 0
         for activity, number in filters.iteritems():
             samples = get_samples(foldername, filter=activity)
             for sample in samples:
+                noOfSamples +=1
                 self.data.append(sample)
                 self.target.append(number)
                 self.activities.append(activity)
+        print "foldername= ", foldername, "noOfSamples= ", noOfSamples
+
             
 def get_samples(foldername, filter=None):
     samples = []
