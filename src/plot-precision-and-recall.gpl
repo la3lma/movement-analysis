@@ -1,0 +1,5 @@
+
+plot "logs/precision-recall-time-evolution.csv" every ::2 using 1:2 title 'precision' with lines,\
+     "logs/precision-recall-time-evolution.csv" every ::2 using 1:3 title 'recall' with lines
+
+  
