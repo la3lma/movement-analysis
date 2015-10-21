@@ -27,8 +27,10 @@ class sample_file:
         oscilations_per_sample = [float(oscilations) / num_samples for oscilations in range(0, num_samples)]
         return [ops * samples_per_second for ops in oscilations_per_sample]
     
-    def get_buckets(self, num_buckets, hertz_cutoff=float(5)):
-        one_dimentional = [column[2] for column in self.data]
+    def get_buckets(self, first, last, num_buckets, hertz_cutoff=float(5)):
+        slice=self.data[first:last]
+        print "len slice = " + str(len(slice))
+        one_dimentional = [column[2] for column in slice]
         transformed = fft.fft(one_dimentional)
         absolute = [abs(complex) for complex in transformed]
         
@@ -44,7 +46,7 @@ class sample_file:
         return buckets
     
     def get_samples(self):
-        buckets = self.get_buckets(40)
+        buckets = self.get_buckets(0, len(self.data), 40)
         return [buckets]
         
 class dataset:
