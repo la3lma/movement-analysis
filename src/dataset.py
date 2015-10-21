@@ -3,6 +3,7 @@ from matplotlib import pyplot
 from pickle import BINSTRING
 import math
 import os
+from sklearn import svm
 
 class sample_file:
     def __init__(self, filename):
@@ -46,11 +47,13 @@ class dataset:
     def __init__(self, foldername, filters = {'dancing': 0, 'walking': 1, 'sitting':2}):
         self.data = []
         self.target = []
+        self.activities = []
         for activity, number in filters.iteritems():
             samples = get_samples(foldername, filter=activity)
             for sample in samples:
                 self.data.append(sample)
                 self.target.append(number)
+                self.activities.append(activity)
             
 def get_samples(foldername, filter=None):
     samples = []
@@ -63,11 +66,15 @@ def get_samples(foldername, filter=None):
     return samples
           
 if __name__ == '__main__':
+    filters = {'dancing': 0, 'walking': 1, 'sitting':2}
+    training = dataset('../datasets/training', filters)
     
-    everything = dataset('../datasets')
-    print everything.data
-    print everything.target
-    
+    clf = svm.SVC(gamma=0.001, C=100.)
+    clf.fit(training.data, training.target)
+
+    validation = dataset('../datasets/validation')
+    for i in range(len(validation.data)):
+        print 'expected', filters[validation.activities[i]], 'got', clf.predict(validation.data[i])
 #     pyplot.legend()
 #     pyplot.show()
     
