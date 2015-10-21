@@ -2,13 +2,15 @@ from numpy import fft
 from matplotlib import pyplot
 from pickle import BINSTRING
 import math
+import os
 
-class dataset:
+class sample_file:
     def __init__(self, filename):
+        self.filename = filename
         with open(filename) as file:
             self.data = []
             lines = [line for line in file]
-            for line in lines[1:]:
+            for line in lines[2:]:
                 parts = [float(measurement.strip()) for measurement in line.split(';')]
                 self.data.append(parts)
                 
@@ -20,7 +22,7 @@ class dataset:
         return [ops * samples_per_second for ops in oscilations_per_sample]
     
     def get_buckets(self, num_buckets, hertz_cutoff=float(5)):
-        one_dimentional = [column[2] for column in walking.data]
+        one_dimentional = [column[2] for column in self.data]
         transformed = fft.fft(one_dimentional)
         absolute = [abs(complex) for complex in transformed]
         
@@ -33,17 +35,41 @@ class dataset:
             if index >= num_buckets:
                 break;
             buckets[index] += absolute[i]
-        pyplot.plot([i * width for i in range(num_buckets)], buckets)
-        pyplot.show()
+#         pyplot.plot([i * width for i in range(num_buckets)], buckets, label = self.filename)
         return buckets
-        
-                
-if __name__ == '__main__':
-    walking = dataset('../datasets/jan-walking-30s-v1.csv')
-    jan = dataset('../datasets/jan-walking-30s-v1.csv')
     
-    walking.get_buckets(40)
-    jan.get_buckets(40)
+    def get_samples(self):
+        buckets = self.get_buckets(40)
+        return [buckets]
+        
+class dataset:
+    def __init__(self, foldername, filters = {'dancing': 0, 'walking': 1, 'sitting':2}):
+        self.data = []
+        self.target = []
+        for activity, number in filters.iteritems():
+            samples = get_samples(foldername, filter=activity)
+            for sample in samples:
+                self.data.append(sample)
+                self.target.append(number)
+            
+def get_samples(foldername, filter=None):
+    samples = []
+    for file in os.listdir(foldername):
+        if filter and file.find(filter) == -1:
+            continue
+        for sample in sample_file(foldername + '/' + file).get_samples():
+            samples.append(sample)
+        
+    return samples
+          
+if __name__ == '__main__':
+    
+    everything = dataset('../datasets')
+    print everything.data
+    print everything.target
+    
+#     pyplot.legend()
+#     pyplot.show()
     
     
     
