@@ -1,3 +1,4 @@
+import time
 from numpy import fft
 from matplotlib import pyplot as plt
 from pickle import BINSTRING
@@ -83,12 +84,18 @@ if __name__ == '__main__':
     truedata =  map(lambda x: filters[x], validation.activities)
     # http://scikit-learn.org/stable/auto_examples/calibration/plot_calibration_curve.html
     precision=precision_score(truedata, predicted, average='macro')  
-    recall=precision_score(truedata, predicted, average='macro')  
+    recall=recall_score(truedata, predicted, average='macro')  
+
+    # XXX Precision/recall should be written into a logfile with a timestamp.
     print "predicted = ", predicted
     print "truedata  = ", truedata
     print "macro precision = ", precision
-    print "recall precision = ", precision
-
+    print "recall precision = ", recall
+    
+    ts = time.time()
+    record = str(ts) + ", " +  str(precision) + ", " +  str(recall) + "\n";
+    with open("../logs/precision-recall-time-evolution.csv", "a") as myfile:
+        myfile.write(record)
 
     # Compute confusion matrix
     cm = confusion_matrix(truedata, predicted)
