@@ -4,6 +4,7 @@ from pickle import BINSTRING
 import math
 import os
 from sklearn import svm
+from sklearn import grid_search
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import confusion_matrix
@@ -74,7 +75,10 @@ if __name__ == '__main__':
     filters = {'dancing': 0, 'walking': 1, 'sitting':2}
     training = dataset('../datasets/training', filters)
     
-    clf = svm.SVC(gamma=0.001, C=100.)
+    svr = svm.SVC()
+    parameters = {'kernel':['linear', 'rbf']}
+    clf = grid_search.GridSearchCV(svr, parameters)
+    print clf 
     clf.fit(training.data, training.target)
 
     validation = dataset('../datasets/validation')
