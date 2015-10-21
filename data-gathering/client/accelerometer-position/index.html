@@ -169,12 +169,17 @@
       var self = this;
       self.disabled = 'disabled';
 
+      // new UUID
+      deviceId = getUuid();
+
       beepWithTimeout(5000)
         .then(function() {
           isRunning = true;
           document.querySelector('#sending').textContent = 'Sending';
         })
-        .then(timeout.bind(null, 30000))
+        .then(beepWithTimeout.bind(null, 10000)) // total 30seconds
+        .then(beepWithTimeout.bind(null, 10000))
+        .then(timeout.bind(null, 10000))
         .then(function() {
           isRunning = false;
           document.querySelector('#sending').textContent = 'Not sending';

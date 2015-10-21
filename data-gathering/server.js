@@ -11,6 +11,7 @@ connect()
     .listen(9321, '0.0.0.0');
 
 var logged = {};
+var firstwrite = {};
 
 var ws = require("nodejs-websocket");
 var server = ws.createServer(function(conn) {
@@ -56,6 +57,14 @@ var server = ws.createServer(function(conn) {
       data.accel.y,
       data.accel.z
     ].join(';');
+
+    if (!firstwrite[conn.deviceId]) {
+      console.log("Start measurement", conn.deviceId);
+      fs.appendFileSync(__dirname + '/raw-data/' + conn.deviceId,
+        'sep=;\ntimestamp;gyro-alpha;gyro-beta;gyro-gamma;accel-x;accel-y;accel-z\n',
+        'utf-8');
+      firstwrite[conn.deviceId] = true;
+    }
 
     fs.appendFile(__dirname + '/raw-data/' + conn.deviceId,
       cs + '\n',
