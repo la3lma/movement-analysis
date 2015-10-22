@@ -23,15 +23,28 @@ import docopt
 class sample_file:
     def __init__(self, filename):
         self.filename = filename
+        self.timestamps = []
+        raw_data = []
         with open(filename) as file:
-            self.data = []
             lines = [line for line in file]
             for line in lines[2:]:
                 parts = [float(measurement.strip()) for measurement in line.split(';')]
-                self.data.append(parts)
-
+                self.timestamps.append(parts[0])
+                raw_data.append(parts[1:])
+        self.data = []
+        self.gyros = []
+        self.accelerations = []
+        for i in range(len(raw_data) - 1):
+            current = raw_data[i]
+            next = raw_data[i + 1]
+            gyro = [next[j] - current[j] for j in range(3)]
+            acceleration = current[3:6]
+            self.data.append([gyro[0], gyro[1], gyro[2], acceleration[0], acceleration[1], acceleration[2]])
+            self.gyros.append(gyro)
+            self.accelerations.append(acceleration)
+            
     def get_frequencies(self):
-        num_seconds = float(self.data[-1][0] - self.data[0][0]) / float(1000)
+        num_seconds = float(self.timestamps[-2] - self.timestamps[0]) / float(1000)
         samples_per_second = len(self.data) / num_seconds
         num_samples = len(self.data)
         oscilations_per_sample = [float(oscilations) / num_samples for oscilations in range(0, num_samples)]
@@ -39,7 +52,7 @@ class sample_file:
 
     def get_buckets(self, first, last, num_buckets, hertz_cutoff=float(5)):
         slice=self.data[first:last]
-        one_dimentional = [column[2] for column in slice]
+        one_dimentional = [column[1] for column in slice]
 
         transformed = fft.fft(one_dimentional)
         absolute = [abs(complex) for complex in transformed]
@@ -59,7 +72,7 @@ class sample_file:
         result = []
         segmentsize=100
         # Reduce this to very little to get very large trainingsets
-        stride=10
+        stride=60
         noOfBuckets=40
         for  start in range(0, len(self.data) - segmentsize, stride):
             if start + segmentsize <= len(self.data):
@@ -109,8 +122,8 @@ if __name__ == '__main__':
         parameters = {'kernel':['linear', 'rbf'], 'C':exponential_range, 'gamma':exponential_range}
         clf = grid_search.GridSearchCV(svr, parameters, n_jobs=2, verbose=True)
         clf.fit(training.data, training.target)
-        joblib.dump(clf, '../models/sliding_window.pkl')
-        print clf
+        joblib.dump(clf, '../models/delta_fft_buckets.pkl')
+        print clf 
 
     print 'best_score:', clf.best_score_, 'best C:', clf.best_estimator_.C, 'best gamma:', clf.best_estimator_.gamma
     validation = dataset('../datasets/validation')
