@@ -36,36 +36,73 @@
       position: absolute;
       display: none;
     }
+    #data {
+      width: 600px;
+      margin: auto;
+      text-align: right;
+      font-family: 'Consolas', monospace;
+      line-height: 2rem;
+    }
+
+    #show {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    #show span {
+      margin: 0 20px;
+    }
+
+    .s {
+      color: white;
+    }
+    .w {
+      color: green;
+    }
+    .d {
+      color: red;
+    }
+
   </style>
 </head>
 <body>
   <h1 style="font-size: 60px">Live classification</h1>
   <p><span id="status">Connecting...</span> / <span id="last-event">...</span></p>
+  <div id="show"><span class="s">sitting</span> <span class="w">walking</span> <span class="d">dancing</span></div>
   <div id="data"></div>
 
   <script>
     var wsOpen = false;
     var ws;
+    var all = [];
     function connect() {
       ws = new WebSocket('ws://' + location.hostname + ':9322');
       ws.onopen = function() {
         wsOpen = true;
         document.querySelector('#status').textContent = 'Connected';
-        document.querySelector('#dot').style.display = 'block';
       };
       ws.onclose = function() {
         document.querySelector('#status').textContent = 'Connecting...';
-        document.querySelector('#dot').style.display = 'none';
         wsOpen = false;
         connect();
       };
+
       ws.onmessage = function(e) {
         var data = e.data;
         if (typeof data === 'string') data = JSON.parse(data);
 
-        if (data.type === 'classification') {
+        if (data.type === 'classification' && data.classification) {
+          all.push(data.classification);
+
+          var min = all.length - 10;
+          min = min < 0 ? 0 : min;
+          document.querySelector('#data').innerHTML = all.slice(min, all.length)
+            .map(l=>l.map(c=>['d','w','s'][c])
+                     .map(c=>'<span class="' + c + '">' + c + '</span>')
+                     .join(' '))
+             .join('<br>');
+
           document.querySelector('#last-event').textContent = new Date();
-          document.querySelector('#data').textContent = JSON.stringify(data.classification);
+          // document.querySelector('#data').textContent = data.classification.join(' ');
         }
       };
     }

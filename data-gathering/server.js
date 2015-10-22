@@ -5,6 +5,9 @@ try {
   fs.mkdirSync(__dirname + '/raw-data');
 }
 catch(ex) {}
+if (!fs.existsSync(__dirname + '/classification')) {
+  fs.writeFileSync(__dirname + '/classification', '', 'utf-8');
+}
 
 connect()
     .use(connect.static(__dirname))

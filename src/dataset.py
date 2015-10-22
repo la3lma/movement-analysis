@@ -212,8 +212,9 @@ if __name__ == '__main__':
                         print pr
                 else:
                     print "File didn't change"
-    
+
                 last_touched = stat_result.st_mtime
-                time.sleep(1)
             except:
                 print "Unexpected error", sys.exc_info()[0]
+
+            time.sleep(1)

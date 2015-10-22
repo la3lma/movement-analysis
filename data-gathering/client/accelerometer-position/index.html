@@ -175,10 +175,7 @@
           isRunning = true;
           document.querySelector('#sending').textContent = 'Sending';
         })
-        .then(beepWithTimeout.bind(null, 10000)) // total 60seconds
-        // .then(beepWithTimeout.bind(null, 10000))
-        // .then(beepWithTimeout.bind(null, 10000))
-        // .then(beepWithTimeout.bind(null, 10000))
+        .then(beepWithTimeout.bind(null, 10000)) // total 30 seconds
         .then(beepWithTimeout.bind(null, 10000))
         .then(timeout.bind(null, 10000))
         .then(function() {
