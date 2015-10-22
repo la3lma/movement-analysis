@@ -186,14 +186,6 @@ if __name__ == '__main__':
 
     last_touched = 0
     if data_feed:
-        if (os.path.isdir(data_feed)):
-            #max(os.listdir('.'), )
-            all_files_in_df = map(lambda f: os.path.join(data_feed, f), os.listdir(data_feed))
-            data_feed = max(all_files_in_df, key = os.path.getmtime)
-
-        print "Monitoring file " + data_feed
-
-        last_touched = 0
         while True:
             if (os.path.isdir(data_feed)):
                 #max(os.listdir('.'), )
