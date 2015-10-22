@@ -53,11 +53,12 @@ class sample_file:
         result = []
         segmentsize=100
         # Reduce this to very little to get very large trainingsets
-        stride=100
+        stride=10
         noOfBuckets=40
         for  start in range(0, len(self.data) - segmentsize, stride):
-            segments_buckets = self.get_buckets(start, start + segmentsize, noOfBuckets)
-            result.append(segments_buckets)
+            if start + segmentsize <= len(self.data):
+                segments_buckets = self.get_buckets(start, start + segmentsize, noOfBuckets)
+                result.append(segments_buckets)
         return result
         
     def keep_last_lines(self, num_lines):
@@ -100,11 +101,12 @@ if __name__ == '__main__':
         svr = svm.SVC()
         exponential_range = [pow(10, i) for i in range(-2, 2)]
         parameters = {'kernel':['linear', 'rbf'], 'C':exponential_range, 'gamma':exponential_range}
-        clf = grid_search.GridSearchCV(svr, parameters, n_jobs=8, verbose=True)
+        clf = grid_search.GridSearchCV(svr, parameters, n_jobs=2, verbose=True)
         clf.fit(training.data, training.target)
-        joblib.dump(clf, '../models/3s_window.pkl')
+        joblib.dump(clf, '../models/sliding_window.pkl')
         print clf 
 
+    print 'best_score:', clf.best_score_, 'best C:', clf.best_estimator_.C, 'best gamma:', clf.best_estimator_.gamma
     validation = dataset('../datasets/validation')
     
     predicted = clf.predict(validation.data)
