@@ -92,7 +92,7 @@ class sample_file:
         result = []
         segmentsize=30
         # Reduce this to very little to get very large trainingsets
-        stride=5
+        stride=30
         noOfBuckets=40
         for  start in range(0, len(self.data) - segmentsize, stride):
             if start + segmentsize <= len(self.data):
@@ -182,10 +182,9 @@ if __name__ == '__main__':
 
     data_feed = arguments['--data']
 
-    print "Monitoring file " + data_feed
-
-    last_touched = 0
     if data_feed:
+        last_touched = 0
+        print "Monitoring file " + data_feed
         while True:
             try:
                 if (os.path.isdir(data_feed)):
