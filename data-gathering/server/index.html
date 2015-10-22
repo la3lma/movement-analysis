@@ -40,7 +40,7 @@
 </head>
 <body>
   <h1 style="font-size: 60px">Live classification</h1>
-  <p><span id="status">Connecting...</span></p>
+  <p><span id="status">Connecting...</span> / <span id="last-event">...</span></p>
   <div id="data"></div>
 
   <script>
@@ -64,6 +64,7 @@
         if (typeof data === 'string') data = JSON.parse(data);
 
         if (data.type === 'classification') {
+          document.querySelector('#last-event').textContent = new Date();
           document.querySelector('#data').textContent = JSON.stringify(data.classification);
         }
       };
