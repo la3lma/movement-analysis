@@ -1,13 +1,16 @@
-'''Usage: dataset.py [--model=x --data=feed] [--plot]
+'''Usage: dataset.py [--model=x --data=feed] [--plot] [--pca]
 
 Options:
     --model=m       Path to trained model, omit to rebuild the model
     --data=feed     Path to data file to monitor for live data.
                     If you pass in a folder, it'll pick the last touched file in the folder.
     --plot          Show confusion matrix in a separate window
+    --pca           Apply PCA to the datasets before doing classifications
 '''
 import time
 from numpy import fft
+from numpy import array
+from sklearn.decomposition import PCA
 from matplotlib import pyplot as plt
 from pickle import BINSTRING
 import math
@@ -51,10 +54,21 @@ class sample_file:
         return [ops * samples_per_second for ops in oscilations_per_sample]
 
     def get_buckets(self, first, last, num_buckets, hertz_cutoff=float(5)):
-        slice=self.data[first:last]
-        one_dimentional = [column[1] for column in slice]
 
-        transformed = fft.fft(one_dimentional)
+        if arguments['--pca']:
+            # Transform all of the original data to be a single component
+            # along the first principal component
+            pca = PCA(n_components=1, copy=True, whiten=True)
+            numpy_data = array(self.data)
+            transformed_dataset = PCA.fit_transform(pca, numpy_data)
+            print(pca.explained_variance_ratio_) 
+            slice=transformed_dataset[first:last]
+        else:
+            # Otherwise just pick the beta component from the gyro data
+            slice = self.data[first:last]
+            slice = [column[1] for column in slice]
+
+        transformed = fft.fft(slice)
         absolute = [abs(complex) for complex in transformed]
 
         frequencies = self.get_frequencies()
