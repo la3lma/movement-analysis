@@ -32,13 +32,13 @@ $ cd data-gathering
 $ node server.js
 ```
 
-Now open the monitoring application on your computer, so you can see the live classification, at http://localhost:9321/server.
+Now open the monitoring application on your computer, so you can see the live classification, at [http://localhost:9321/server](http://localhost:9321/server).
 
 Next you want to start gathering data. Make sure your phone and computer are on the same wifi network, and look up the IP of your computer. 
 
 1. Navigate to http://YOURIP:9321 on your mobile phone
 2. Press the 'Start measurement' button
-3. Put the phone (with the screen down) in your left front pocket
+3. Put the phone (with the screen on, and to your leg) in your left front pocket
 4. See data flowing in! (In terminal 2 it should say 'Start measurement')
 
 After a few seconds the classifier starts showing data in your web browser!
