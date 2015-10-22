@@ -1,13 +1,16 @@
-'''Usage: dataset.py [--model=x --data=feed] [--plot]
+'''Usage: dataset.py [--model=x --data=feed] [--plot] [--pca]
 
 Options:
     --model=m       Path to trained model, omit to rebuild the model
     --data=feed     Path to data file to monitor for live data.
                     If you pass in a folder, it'll pick the last touched file in the folder.
     --plot          Show confusion matrix in a separate window
+    --pca           Apply PCA to the datasets before doing classifications
 '''
 import time
 from numpy import fft
+from numpy import array
+from sklearn.decomposition import PCA
 from matplotlib import pyplot as plt
 from pickle import BINSTRING
 import math
@@ -23,25 +26,55 @@ import docopt
 class sample_file:
     def __init__(self, filename):
         self.filename = filename
+        self.timestamps = []
+        raw_data = []
         with open(filename) as file:
-            self.data = []
             lines = [line for line in file]
             for line in lines[2:]:
                 parts = [float(measurement.strip()) for measurement in line.split(';')]
-                self.data.append(parts)
+                self.timestamps.append(parts[0])
+                raw_data.append(parts[1:])
+        self.data = []
+        self.gyros = []
+        self.accelerations = []
+        for i in range(len(raw_data) - 1):
+            current = raw_data[i]
+            next = raw_data[i + 1]
+            gyro = []
+            for j in range(3):
+                delta = next[j] - current[j]
+                if abs(delta) > 180:
+                    delta -= 360 * delta / abs(delta)
+                gyro.append(delta)
+            gyro = [next[j] - current[j] for j in range(3)]
+            acceleration = current[3:6]
+            self.data.append([gyro[0], gyro[1], gyro[2], acceleration[0], acceleration[1], acceleration[2]])
+            self.gyros.append(gyro)
+            self.accelerations.append(acceleration)
 
     def get_frequencies(self):
-        num_seconds = float(self.data[-1][0] - self.data[0][0]) / float(1000)
+        num_seconds = float(self.timestamps[-2] - self.timestamps[0]) / float(1000)
         samples_per_second = len(self.data) / num_seconds
         num_samples = len(self.data)
         oscilations_per_sample = [float(oscilations) / num_samples for oscilations in range(0, num_samples)]
         return [ops * samples_per_second for ops in oscilations_per_sample]
 
     def get_buckets(self, first, last, num_buckets, hertz_cutoff=float(5)):
-        slice=self.data[first:last]
-        one_dimentional = [column[2] for column in slice]
 
-        transformed = fft.fft(one_dimentional)
+        if arguments['--pca']:
+            # Transform all of the original data to be a single component
+            # along the first principal component
+            pca = PCA(n_components=1, copy=True, whiten=True)
+            numpy_data = array(self.data)
+            transformed_dataset = PCA.fit_transform(pca, numpy_data)
+            print(pca.explained_variance_ratio_)
+            slice=transformed_dataset[first:last]
+        else:
+            # Otherwise just pick the beta component from the gyro data
+            slice = self.data[first:last]
+            slice = [column[1] for column in slice]
+
+        transformed = fft.fft(slice)
         absolute = [abs(complex) for complex in transformed]
 
         frequencies = self.get_frequencies()
@@ -59,7 +92,7 @@ class sample_file:
         result = []
         segmentsize=100
         # Reduce this to very little to get very large trainingsets
-        stride=10
+        stride=60
         noOfBuckets=40
         for  start in range(0, len(self.data) - segmentsize, stride):
             if start + segmentsize <= len(self.data):
@@ -105,11 +138,11 @@ if __name__ == '__main__':
         training = dataset('../datasets/training', filters)
 
         svr = svm.SVC()
-        exponential_range = [pow(10, i) for i in range(-2, 2)]
+        exponential_range = [pow(10, i) for i in range(-4, 1)]
         parameters = {'kernel':['linear', 'rbf'], 'C':exponential_range, 'gamma':exponential_range}
         clf = grid_search.GridSearchCV(svr, parameters, n_jobs=2, verbose=True)
         clf.fit(training.data, training.target)
-        joblib.dump(clf, '../models/sliding_window.pkl')
+        joblib.dump(clf, '../models/delta_fft_buckets.pkl')
         print clf
 
     print 'best_score:', clf.best_score_, 'best C:', clf.best_estimator_.C, 'best gamma:', clf.best_estimator_.gamma
@@ -153,6 +186,14 @@ if __name__ == '__main__':
 
     last_touched = 0
     if data_feed:
+        if (os.path.isdir(data_feed)):
+            #max(os.listdir('.'), )
+            all_files_in_df = map(lambda f: os.path.join(data_feed, f), os.listdir(data_feed))
+            data_feed = max(all_files_in_df, key = os.path.getmtime)
+
+        print "Monitoring file " + data_feed
+
+        last_touched = 0
         while True:
             if (os.path.isdir(data_feed)):
                 #max(os.listdir('.'), )
