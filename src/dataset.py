@@ -90,9 +90,9 @@ class sample_file:
 
     def get_samples(self):
         result = []
-        segmentsize=100
+        segmentsize=30
         # Reduce this to very little to get very large trainingsets
-        stride=60
+        stride=5
         noOfBuckets=40
         for  start in range(0, len(self.data) - segmentsize, stride):
             if start + segmentsize <= len(self.data):
@@ -142,8 +142,8 @@ if __name__ == '__main__':
         parameters = {'kernel':['linear', 'rbf'], 'C':exponential_range, 'gamma':exponential_range}
         clf = grid_search.GridSearchCV(svr, parameters, n_jobs=2, verbose=True)
         clf.fit(training.data, training.target)
-        joblib.dump(clf, '../models/delta_fft_buckets.pkl')
-        print clf
+        joblib.dump(clf, '../models/1s_6sps.pkl')
+        print clf 
 
     print 'best_score:', clf.best_score_, 'best C:', clf.best_estimator_.C, 'best gamma:', clf.best_estimator_.gamma
     validation = dataset('../datasets/validation')
