@@ -8,3 +8,5 @@
 6. 1 beep is Start
 7. 2 beeps is Stop
 8. Data is stored in raw-data folder
+
+If you also have the Python app running you can go to http://localhost:9321/server to see live classifier data based on data flowing in.
