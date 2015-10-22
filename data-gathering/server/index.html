@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Live classification data</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+    }
+
+    body {
+      background: black;
+      font-family: 'Open Sans', sans-serif;
+      color: white;
+    }
+
+    h1 {
+      text-align: center;
+      font-weight: 300;
+      margin: 20px 0;
+    }
+
+    p {
+      text-align: center;
+    }
+
+    #dot {
+      width: 25px;
+      height: 25px;
+      border-radius: 25px;
+      background: red;
+      position: absolute;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="font-size: 60px">Live classification</h1>
+  <p><span id="status">Connecting...</span></p>
+  <div id="data"></div>
+
+  <script>
+    var wsOpen = false;
+    var ws;
+    function connect() {
+      ws = new WebSocket('ws://' + location.hostname + ':9322');
+      ws.onopen = function() {
+        wsOpen = true;
+        document.querySelector('#status').textContent = 'Connected';
+        document.querySelector('#dot').style.display = 'block';
+      };
+      ws.onclose = function() {
+        document.querySelector('#status').textContent = 'Connecting...';
+        document.querySelector('#dot').style.display = 'none';
+        wsOpen = false;
+        connect();
+      };
+      ws.onmessage = function(e) {
+        var data = e.data;
+        if (typeof data === 'string') data = JSON.parse(data);
+
+        if (data.type === 'classification') {
+          document.querySelector('#data').textContent = JSON.stringify(data.classification);
+        }
+      };
+    }
+    connect();
+  </script>
+</body>
+</html>

@@ -148,25 +148,37 @@ if __name__ == '__main__':
         plt.show()
 
     data_feed = arguments['--data']
-    if (os.path.isdir(data_feed)):
-        #max(os.listdir('.'), )
-        all_files_in_df = map(lambda f: os.path.join(data_feed, f), os.listdir(data_feed))
-        data_feed = max(all_files_in_df, key = os.path.getmtime)
 
     print "Monitoring file " + data_feed
 
     last_touched = 0
     if data_feed:
         while True:
+            if (os.path.isdir(data_feed)):
+                #max(os.listdir('.'), )
+                all_files_in_df = map(lambda f: os.path.join(data_feed, f), os.listdir(data_feed))
+                data_file = max(all_files_in_df, key = os.path.getmtime)
+            else:
+                data_file = data_feed
+
             # get last modified time
-            stat_result = os.stat(data_feed)
+            stat_result = os.stat(data_file)
             # file changed?
             if stat_result.st_mtime != last_touched:
-                sample = sample_file(data_feed)
-                sample.keep_last_lines(180)
-                samples = sample.get_samples()
-                sys.stdout.write("Classification: ")
-                print clf.predict(samples)
+                try:
+                    sample = sample_file(data_file)
+                    sample.keep_last_lines(180)
+                    samples = sample.get_samples()
+                    sys.stdout.write("Classification: ")
+
+                    pr = clf.predict(samples)
+                    with open('../data-gathering/classification', 'w') as f:
+                        f.truncate()
+                        f.write(str(pr))
+
+                    print pr
+                except:
+                    print "Unexpected error", sys.exc_info()[0]
             else:
                 print "File didn't change"
 

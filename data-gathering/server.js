@@ -10,6 +10,23 @@ connect()
     .use(connect.static(__dirname))
     .listen(9321, '0.0.0.0');
 
+fs.watch('./classification', function(curr, prev) {
+  if (!curr) return;
+  fs.readFile('./classification', 'utf-8', function(err, data) {
+    if (err) {
+      return console.error('Cannot read classification file', err);
+    }
+    console.log('Classification is now', data);
+    broadcast(JSON.stringify({
+      type: 'classification',
+      classification: data.match(/\d/g)
+    }));
+  });
+});
+
+
+
+
 var logged = {};
 var firstwrite = {};
 
