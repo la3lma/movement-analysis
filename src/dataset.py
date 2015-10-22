@@ -37,6 +37,12 @@ class sample_file:
         for i in range(len(raw_data) - 1):
             current = raw_data[i]
             next = raw_data[i + 1]
+            gyro = []
+            for j in range(3):
+                delta = next[j] - current[j]
+                if abs(delta) > 180:
+                    delta -= 360 * delta / abs(delta)
+                gyro.append(delta)
             gyro = [next[j] - current[j] for j in range(3)]
             acceleration = current[3:6]
             self.data.append([gyro[0], gyro[1], gyro[2], acceleration[0], acceleration[1], acceleration[2]])
@@ -118,7 +124,7 @@ if __name__ == '__main__':
         training = dataset('../datasets/training', filters)
 
         svr = svm.SVC()
-        exponential_range = [pow(10, i) for i in range(-2, 2)]
+        exponential_range = [pow(10, i) for i in range(-4, 1)]
         parameters = {'kernel':['linear', 'rbf'], 'C':exponential_range, 'gamma':exponential_range}
         clf = grid_search.GridSearchCV(svr, parameters, n_jobs=2, verbose=True)
         clf.fit(training.data, training.target)
