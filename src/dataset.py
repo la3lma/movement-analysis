@@ -1,4 +1,4 @@
-'''Usage: dataset.py [--model=x --data=feed] [--plot] [--pca]
+'''Usage: dataset.py [--model=x --data=feed] [--plot] [--pca] [--normalize]
 
 Options:
     --model=m       Path to trained model, omit to rebuild the model
@@ -6,6 +6,7 @@ Options:
                     If you pass in a folder, it'll pick the last touched file in the folder.
     --plot          Show confusion matrix in a separate window
     --pca           Apply PCA to the datasets before doing classifications
+    --normalize     Normalize FFT buckets before running classifier.
 '''
 import time
 from numpy import fft
@@ -81,11 +82,17 @@ class sample_file:
 
         buckets = [0 for i in range(num_buckets)]
         width = hertz_cutoff / num_buckets
+        sum_of_buckets = 0.0000001
         for i in range(1, len(absolute)):
             index = int(frequencies[i] / width)
             if index >= num_buckets:
                 break;
             buckets[index] += absolute[i]
+            sum_of_buckets += absolute[i]
+
+        if arguments['--normalize']:
+            buckets = map(lambda x: x/sum_of_buckets, buckets)
+            
         return buckets
 
     def get_samples(self):
@@ -140,7 +147,7 @@ if __name__ == '__main__':
         svr = svm.SVC()
         exponential_range = [pow(10, i) for i in range(-4, 1)]
         parameters = {'kernel':['linear', 'rbf'], 'C':exponential_range, 'gamma':exponential_range}
-        clf = grid_search.GridSearchCV(svr, parameters, n_jobs=2, verbose=True)
+        clf = grid_search.GridSearchCV(svr, parameters, n_jobs=8, verbose=True)
         clf.fit(training.data, training.target)
         joblib.dump(clf, '../models/1s_6sps.pkl')
         print clf
@@ -179,6 +186,7 @@ if __name__ == '__main__':
         plt.ylabel('True label')
         plt.xlabel('Predicted label')
         plt.show()
+
 
     data_feed = arguments['--data']
 
