@@ -2,6 +2,8 @@
 
 Classification of human movement based on accelerometer / gyro data from mobile phones
 
+[![See Jan dancing!](http://img.youtube.com/vi/I0cho9xLv0E/0.jpg)](http://www.youtube.com/watch?v=I0cho9xLv0E)
+
 * `data-gathering` contains all the code required for collecting live data from smartphones and dump it to disk
 * `datasets` contains training and verification data that we use to train the model
 * `logs` track model performance over time
