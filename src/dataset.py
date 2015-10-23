@@ -99,7 +99,7 @@ class sample_file:
         result = []
         segmentsize=30
         # Reduce this to very little to get very large trainingsets
-        stride=30
+        stride=5
         noOfBuckets=40
         for  start in range(0, len(self.data) - segmentsize, stride):
             if start + segmentsize <= len(self.data):
